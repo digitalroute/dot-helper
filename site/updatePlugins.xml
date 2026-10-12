@@ -1,5 +1,5 @@
 <plugins>
-  <plugin id="com.digitalroute.dummyplugin" url="https://digitalroute.github.io/dot-helper/plugin/dummy-plugin-0.0.3.zip" version="0.0.3">
+  <plugin id="com.digitalroute.dummyplugin" url="https://github.com/digitalroute/dot-helper/releases/download/plugin-v0.0.3/dummy-plugin-0.0.3.zip" version="0.0.3">
     <description>PoC placeholder for #186/#178 — not a real plugin release.</description>
   </plugin>
 </plugins>
