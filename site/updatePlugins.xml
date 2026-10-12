@@ -1,6 +1,5 @@
 <plugins>
-  <plugin id="com.digitalroute.dot-helper.placeholder" url="dot-helper-placeholder-0.0.1.zip" version="0.0.1">
-    <name>dot-helper placeholder plugin</name>
-    <description>Placeholder entry for the GitHub Pages update-site PoC (digitalroute/dr-platform-team#186). Not a real, signed plugin.</description>
+  <plugin id="com.digitalroute.dummyplugin" url="https://digitalroute.github.io/dot-helper/plugin/dummy-plugin-0.0.2.zip" version="0.0.2">
+    <description>PoC placeholder for #186/#178 — not a real plugin release.</description>
   </plugin>
 </plugins>
