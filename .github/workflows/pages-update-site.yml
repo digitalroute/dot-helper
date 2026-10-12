@@ -1,0 +1,99 @@
+name: PoC - IntelliJ plugin update site (GitHub Pages)
+
+# Proof of concept for digitalroute/dr-platform-team#178: build an
+# IntelliJ plugin "update site" (an updatePlugins.xml index plus the
+# plugin ZIP it points at) and publish it over HTTPS via GitHub Pages,
+# using the artifact-based Pages deploy (no publishing branch).
+#
+# Out of scope for this PoC: real plugin signing, custom domain. The
+# plugin.xml/ZIP built below are placeholders, not a signed release.
+#
+# CI-only publishing: this workflow is the only writer of the Pages
+# deployment, but there is no publishing *branch* to protect under the
+# actions/deploy-pages model (GitHub stores the deployment itself, not a
+# branch). The equivalent control is a repo-admin setting, not a file in
+# this tree - see the "CI-only publishing" section in README.md for the
+# exact steps to apply by hand.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/pages-update-site.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time; let an in-flight one finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build placeholder update site
+        run: |
+          set -euo pipefail
+
+          site_dir="$(mktemp -d)/site"
+          plugin_src="$(mktemp -d)/plugin-src/META-INF"
+          mkdir -p "$site_dir" "$plugin_src"
+
+          plugin_id="com.digitalroute.dot-helper.placeholder"
+          plugin_name="dot-helper placeholder plugin"
+          plugin_version="0.0.1"
+          plugin_zip="dot-helper-placeholder-$plugin_version.zip"
+
+          cat > "$plugin_src/plugin.xml" <<XML
+          <idea-plugin>
+            <id>$plugin_id</id>
+            <name>$plugin_name</name>
+            <version>$plugin_version</version>
+            <vendor>DigitalRoute</vendor>
+            <description>Placeholder plugin for the GitHub Pages update-site PoC (digitalroute/dr-platform-team#186). Not a real, signed plugin.</description>
+            <idea-version since-build="223"/>
+          </idea-plugin>
+          XML
+
+          (cd "$(dirname "$plugin_src")" && zip -r "$site_dir/$plugin_zip" META-INF)
+
+          cat > "$site_dir/updatePlugins.xml" <<XML
+          <plugins>
+            <plugin id="$plugin_id" url="$plugin_zip" version="$plugin_version">
+              <name>$plugin_name</name>
+              <description>Placeholder entry for the GitHub Pages update-site PoC (digitalroute/dr-platform-team#186). Not a real, signed plugin.</description>
+            </plugin>
+          </plugins>
+          XML
+
+          echo "SITE_DIR=$site_dir" >> "$GITHUB_ENV"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: ${{ env.SITE_DIR }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
