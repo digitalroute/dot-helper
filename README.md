@@ -4,19 +4,23 @@
 
 This repo hosts a proof-of-concept GitHub Pages site that serves an
 IntelliJ "custom plugin repository": an `updatePlugins.xml` index plus
-the plugin ZIP(s) it points at, over HTTPS. The workflow that builds and
-publishes it is `.github/workflows/pages-update-site.yml`.
+the plugin ZIP(s) it points at, over HTTPS. The site's content lives in
+`site/`, committed to this repo. The workflow that publishes it is
+`.github/workflows/pages-update-site.yml`.
 
-The content it publishes is a placeholder - a dummy `plugin.xml` zipped
-up and indexed - not a signed plugin release. Real plugin signing and a
-custom domain are out of scope for this PoC.
+This repo is a content bucket: it doesn't build or sign the plugin, it
+just deploys whatever is committed under `site/`. The content there
+today is a placeholder - a dummy `plugin.xml` zipped up and indexed -
+not a signed plugin release. Real plugin signing and a custom domain are
+out of scope for this PoC.
 
 ### How it's published
 
-The workflow generates the placeholder `updatePlugins.xml` and plugin
-ZIP, then publishes them with GitHub's artifact-based Pages deploy flow
-(`actions/configure-pages` -> `actions/upload-pages-artifact` ->
-`actions/deploy-pages`). There is no publishing branch in this model -
+On every push to `master` that touches `site/**` or the workflow file
+itself (or on a manual `workflow_dispatch` run), the workflow publishes
+the committed `site/` directory with GitHub's artifact-based Pages
+deploy flow (`actions/configure-pages` -> `actions/upload-pages-artifact`
+-> `actions/deploy-pages`). There is no publishing branch in this model -
 GitHub stores the deployment itself, built straight from the workflow
 run's artifact.
 
